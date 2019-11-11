@@ -13,6 +13,12 @@ class Tile:
         self.latitute = 0
         self.longitutde = 0
 
+def getTile(in_zip):
+    #returns the tile that contains the center of the zip code
+
+def getPopulation(in_zip):
+    #returns the population of the given zip code
+
 
 '''
 for z in zipCodes:
