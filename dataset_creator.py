@@ -19,10 +19,10 @@ def getTile(in_zip):
 def getPopulation(in_zip):
     #returns the population of the given zip code
 
+def getIncome(in_zip):
+    #returns the total yearly income in the zip code
 
-'''
-for z in zipCodes:
-    for t in Tiles:
+def getIncomePerCapita(in_Tile):
+    #returns the income per capita in a single tile
 
-'''
 
