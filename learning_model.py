@@ -55,6 +55,11 @@ model.add(layers.Dense(128, activation='relu'))
 model.add(layers.Dense(64, activation='relu'))
 model.add(layers.Dense(1, activation=None)) #"regression" layer
 
+model.compile(optimizer=keras.optimizers.SGD(learning_rate=0.02), loss=keras.losses.mean_squared_error)
 
-train_X, train_Y =
+data_file = #dataset filename
+data_pack = DatasetPackage(data_file)
+train_x, train_y = data_pack.get_training_data()
+#training method:
+model.fit(x=train_x, y=train_y, callbacks=)
 
