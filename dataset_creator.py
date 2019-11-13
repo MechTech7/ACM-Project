@@ -23,6 +23,16 @@ def import_process(jpg):
     im = Image.open(jpg)
     array = np.array(im)
     return pre_process(array)
+
+def pre_process2(image):
+    #image is a [256, 256, 3] numpy array
+    op = cv2.resize(image, dsize=(OUTPUT_IMAGE_WIDTH, OUTPUT_IMAGE_WIDTH), interpolation=cv2.INTER_CUBIC)
+    return op
+
+def import_process2(jpg):
+    im = Image.open(jpg)
+    array = np.array(im)
+    return pre_process2(array)
     
 
 class ZipCode:
@@ -33,7 +43,7 @@ class ZipCode:
         self.lon = lonCoord
     def __str__(self):
         if (hasattr(self,"population")):
-            return "ZIPCODE - zipcode: %s, # of tiles: %s, lat: %s, lon: %s, moneyPerPerson: %s" % (self.zipcode, len(self.tiles), self.lat, self.lon, self.moneyPerPop)
+            return "ZIPCODE - zipcode: %s, # of tiles: %s, lat: %s, lon: %s, moneyPerPerson: %s, money: %s, population: %s" % (self.zipcode, len(self.tiles), self.lat, self.lon, self.moneyPerPop, self.money, self.population)
         return "ZIPCODE - zipcode: %s, # of tiles: %s, lat: %s, lon: %s" % (self.zipcode, len(self.tiles), self.lat, self.lon)
 
 class Tile:
@@ -56,6 +66,8 @@ zipCodesMoneyData = np.genfromtxt("16zpallnoagi.csv", skip_header=2, dtype=np.fl
 zipCodesCodes2 = zipCodesMoneyData[:, 2]
 zipCodesPopulation = zipCodesMoneyData[:, 4]
 zipCodesMoney = zipCodesMoneyData[:, 20]
+print("zipcode: "+str(zipCodesCodes2[0])+", population: "+str(zipCodesPopulation[0])+", money: "+str(zipCodesMoney[0]))
+
 
 #iterate over the zip codes
 print(zipCodesCodes.shape[0])
@@ -74,6 +86,7 @@ for i in range(zipCodesCodes.shape[0]):
             if (int(zipCodesCodes2[j]) == zipcodeCode):
                 newZip.population = zipCodesPopulation[j]
                 newZip.money = zipCodesMoney[j]
+                assert(zipCodesMoney[j] > 0)
                 newZip.moneyPerPop = zipCodesMoney[j]/zipCodesPopulation[j]
                 break
         if (hasattr(newZip,"population")):
@@ -82,7 +95,7 @@ for i in range(zipCodesCodes.shape[0]):
             tiles[newTile.img] = newTile
             newZip.tiles.append(newTile)
         else:
-            print(str(newZip) + " X: "+str(x(newZip.lon,14))+" Y: "+str(y(newZip.lat,14)))
+            #print(str(newZip) + " X: "+str(x(newZip.lon,14))+" Y: "+str(y(newZip.lat,14)))
             count += 1
 
 print(count)
@@ -95,7 +108,7 @@ for xCoord in range(2794, 2839):
         latCoord = lat(yCoord,14)
         elev = getElevation(latCoord, lonCoord)
         imgCode = imageFile(xCoord,yCoord)
-        if (imgCode not in tiles and elev > 0):
+        if (imgCode not in tiles and elev > 0): 
             minI = 0
             minDist = float("inf")
             for i in zipCodes.keys():
@@ -125,12 +138,27 @@ for i in tiles.keys():
     current = tiles[i]
     npImageArray = import_process(current.img)
     extraLine = np.empty([1, 224, 3])
+
+    if (idx < 4):
+        npImageArray2 = import_process2(current.img)
+        img = Image.fromarray(npImageArray2, 'RGB')
+        newName = tiles[i].img[:tiles[i].img.find(".")] + "_2" + tiles[i].img[tiles[i].img.find("."):]
+        print(tiles[i].zipCode.moneyPerPop)
+        print(tiles[i].img)
+        print(newName+"\n")
+        img.save(newName)
+
     if (not hasattr(current.zipCode,"moneyPerPop")):
         print(current.zipCode)
     extraLine[0][0][0] = current.zipCode.moneyPerPop
     npImageArray = np.append(npImageArray, extraLine, axis=0)
-    nptiles[idx] = npImageArray 
-    idx += 1   
-np.save("compiledData.npy", nptiles)
+    nptiles[idx] = npImageArray
+    idx += 1
 
+print(nptiles[0][224][0][0])
+print(nptiles[1][224][0][0])
+print(nptiles[2][224][0][0])
+print(nptiles[3][224][0][0])
+print(nptiles[4][224][0][0])
+np.save("compiledData.npy", nptiles)
 
