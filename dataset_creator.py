@@ -3,12 +3,27 @@ import io
 from webmercator import *
 from util import *
 import math
+import cv2
+from PIL import Image
 
+OUTPUT_IMAGE_WIDTH = 224
 def imageFile(x, y):
     return "imagery/14_"+str(x)+"_"+str(y)+".jpg"
 
 def dist(x1, y1, x2, y2):
     return math.sqrt(math.pow(x1-x2, 2) + math.pow(y1-y2, 2))
+
+def pre_process(image):
+    #image is a [256, 256, 3] numpy array
+    op = cv2.resize(image, dsize=(OUTPUT_IMAGE_WIDTH, OUTPUT_IMAGE_WIDTH), interpolation=cv2.INTER_CUBIC)
+    op = (op / 255)
+    return op
+
+def import_process(jpg):
+    im = Image.open(jpg)
+    array = np.array(im)
+    return pre_process(array)
+    
 
 class ZipCode:
     def __init__(self,zipcode,latCoord,lonCoord):
@@ -45,6 +60,8 @@ zipCodesMoney = zipCodesMoneyData[:, 20]
 #iterate over the zip codes
 print(zipCodesCodes.shape[0])
 
+count = 0
+
 for i in range(zipCodesCodes.shape[0]):
     latCoord = zipCodesLats[i]
     lonCoord = zipCodesLongs[i]
@@ -53,27 +70,24 @@ for i in range(zipCodesCodes.shape[0]):
     yCoord = int(round(y(latCoord,14)))
     if xCoord >= 2794 and xCoord < 2839 and yCoord >= 6528 and yCoord < 6572:
         newZip = ZipCode(zipcodeCode, latCoord, lonCoord)
-        newTile = Tile(newZip,xCoord,yCoord)
-        tiles[newTile.img] = newTile
-        newZip.tiles.append(newTile)
-        zipCodes[zipcodeCode] = newZip
+        for j in range(zipCodesCodes2.shape[0]): 
+            if (int(zipCodesCodes2[j]) == zipcodeCode):
+                newZip.population = zipCodesPopulation[j]
+                newZip.money = zipCodesMoney[j]
+                newZip.moneyPerPop = zipCodesMoney[j]/zipCodesPopulation[j]
+                break
+        if (hasattr(newZip,"population")):
+            zipCodes[zipcodeCode] = newZip
+            newTile = Tile(newZip,xCoord,yCoord)
+            tiles[newTile.img] = newTile
+            newZip.tiles.append(newTile)
+        else:
+            print(str(newZip) + " X: "+str(x(newZip.lon,14))+" Y: "+str(y(newZip.lat,14)))
+            count += 1
 
-removeList = []
-for i in zipCodes.keys():
-    currZipCode = i
-    for j in range(zipCodesCodes2.shape[0]): 
-        if (int(zipCodesCodes2[j]) == currZipCode):
-            zipCodes[i].population = zipCodesPopulation[j]
-            zipCodes[i].money = zipCodesMoney[j]
-            zipCodes[i].moneyPerPop = zipCodesMoney[j]/zipCodesPopulation[j]
-            break
-    if (not hasattr(zipCodes[i],"population")):
-        removeList.append(i)
+print(count)
 
-for i in removeList:
-    del zipCodes[i]
-
-print(len(removeList))
+print(len(zipCodes.keys()))
 
 for xCoord in range(2794, 2839):
     for yCoord in range(6528, 6572):
@@ -102,4 +116,21 @@ for i in zipCodes.keys():
     print("")
     if (count >= 20):
         break
+
+print(len(tiles))
+nptiles = np.empty([len(tiles), 225, 224, 3])
+
+idx = 0
+for i in tiles.keys():
+    current = tiles[i]
+    npImageArray = import_process(current.img)
+    extraLine = np.empty([1, 224, 3])
+    if (not hasattr(current.zipCode,"moneyPerPop")):
+        print(current.zipCode)
+    extraLine[0][0][0] = current.zipCode.moneyPerPop
+    npImageArray = np.append(npImageArray, extraLine, axis=0)
+    nptiles[idx] = npImageArray 
+    idx += 1   
+np.save("compiledData.npy", nptiles)
+
 

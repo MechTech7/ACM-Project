@@ -16,4 +16,3 @@ def jpg_to_npy(jpg, npy):
     array = np.array(im)
     array = np.int16(array)
     np.save(npy, array)
-
