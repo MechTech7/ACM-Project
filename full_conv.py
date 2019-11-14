@@ -29,8 +29,10 @@ class DatasetPackage:
         self.valid_data = self.x_data[train_count:valid_index, :, :, :]
         self.valid_labels = self.y_data[train_count:valid_index]
 
-        self.test_data = self.x_data[valid_index:-1, :, :, :]
-        self.test_labels = self.y_data[valid_index:-1]
+        self.test_data = self.x_data[valid_index:, :, :, :]
+        self.test_labels = self.y_data[valid_index:]
+
+        
 
 
         #the data file can be a .npy file, really just a big matrix 
@@ -54,17 +56,29 @@ class DatasetPackage:
 
 print(type(keras.initializers.RandomNormal()))
 
-conv_layer_1 = layers.Conv2D(filters=64, kernel_size=5, strides=2, padding="same", activation=tf.keras.activations.relu, 
-                                kernel_initializer=keras.initializers.RandomNormal(), bias_initializer=keras.initializers.RandomNormal())
+conv_layer_1 = layers.Conv2D(filters=16, kernel_size=5, strides=2, padding="same", activation=tf.keras.activations.relu, 
+                                kernel_initializer=keras.initializers.RandomNormal(), 
+                                bias_initializer=keras.initializers.RandomNormal(),
+                                kernel_regularizer=keras.regularizers.l1(),
+                                bias_regularizer=keras.regularizers.l1())
 
 conv_layer_2 = layers.Conv2D(filters=32, kernel_size=5, strides=2, padding="same", activation=tf.keras.activations.relu, 
-                                kernel_initializer=keras.initializers.RandomNormal(), bias_initializer=keras.initializers.RandomNormal())
+                                kernel_initializer=keras.initializers.RandomNormal(), 
+                                bias_initializer=keras.initializers.RandomNormal(),
+                                kernel_regularizer=keras.regularizers.l1(),
+                                bias_regularizer=keras.regularizers.l1())
 
 conv_layer_3 = layers.Conv2D(filters=64, kernel_size=5, strides=2, padding="same", activation=tf.keras.activations.relu, 
-                                kernel_initializer=keras.initializers.RandomNormal(), bias_initializer=keras.initializers.RandomNormal())
+                                kernel_initializer=keras.initializers.RandomNormal(), 
+                                bias_initializer=keras.initializers.RandomNormal(),
+                                kernel_regularizer=keras.regularizers.l1(),
+                                bias_regularizer=keras.regularizers.l1())
 
 conv_layer_4 = layers.Conv2D(filters=128, kernel_size=5, strides=2, padding="same", activation=tf.keras.activations.relu, 
-                                kernel_initializer=keras.initializers.RandomNormal(), bias_initializer=keras.initializers.RandomNormal())
+                                kernel_initializer=keras.initializers.RandomNormal(), 
+                                bias_initializer=keras.initializers.RandomNormal(),
+                                kernel_regularizer=keras.regularizers.l1(),
+                                bias_regularizer=keras.regularizers.l1())
 
 inputs = keras.Input(shape=(224, 224, 3, ), name="input_images")
 
@@ -82,7 +96,9 @@ conv_4 = layers.BatchNormalization()(conv_4)
 
 conv_4 = layers.Flatten()(conv_4)
 x = layers.Dense(128, activation=tf.keras.activations.relu, kernel_initializer=keras.initializers.RandomNormal(), bias_initializer=keras.initializers.RandomNormal())(conv_4)
+x = layers.Dropout(0.5)(x)
 x = layers.Dense(64, activation=tf.keras.activations.relu, kernel_initializer=keras.initializers.RandomNormal(), bias_initializer=keras.initializers.RandomNormal())(x)
+x = layers.Dropout(0.5)(x)
 x = layers.Dense(1, activation=tf.keras.activations.relu, kernel_initializer=keras.initializers.RandomNormal(), bias_initializer=keras.initializers.RandomNormal())(x)
 model = keras.Model(inputs=inputs, outputs=x)
 
