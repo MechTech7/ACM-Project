@@ -3,6 +3,8 @@ import numpy as np
 from tensorflow import keras
 from tensorflow.keras import layers
 
+
+#NOTE: this model is seriously overfitting.  Potentially try out weight_regularization, dropout and other techniques
 class DatasetPackage:
     def __init__(self, data_file):
         #The dataset package that takes in a file and initializes the train, validation and test sets
