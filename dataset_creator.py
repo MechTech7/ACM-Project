@@ -8,7 +8,7 @@ from PIL import Image
 
 OUTPUT_IMAGE_WIDTH = 224
 
-tileFlipping = False
+tileFlipping = True
 
 def imageFile(x, y):
     return "imagery/14_"+str(x)+"_"+str(y)+".jpg"
@@ -99,6 +99,7 @@ for i in range(zipCodesCodes.shape[0]):
 
 print("number of zipcodes: "+str(len(zipCodes.keys())))
 
+count = 0
 for xCoord in range(2794, 2839):
     for yCoord in range(6528, 6572):
         lonCoord = lon(xCoord,14)
@@ -116,10 +117,14 @@ for xCoord in range(2794, 2839):
             newTile = Tile(zipCodes[minI],xCoord,yCoord)
             zipCodes[minI].tiles.append(newTile)
             tiles[newTile.img] = newTile
+        elif (elev <= 0):
+            count += 1
+
+print("number of ocean tiles: "+str(count))
             
 numberTiles = len(tiles)
 if (tileFlipping):
-    numberTiles = len(tiles)*4
+    numberTiles = len(tiles)*8
 nptiles = np.empty([numberTiles, 225, 224, 3])
 
 idx = 0
@@ -127,9 +132,14 @@ for i in tiles.keys():
     current = tiles[i]
     npImageArray = import_process(current.img)
     if (tileFlipping):
-        npImageArray2 = np.flip(np.copy(npImageArray), axis = 0)
-        npImageArray3 = np.flip(np.copy(npImageArray), axis = 1)
-        npImageArray4 = np.flip(np.flip(np.copy(npImageArray), axis = 0), axis = 1)
+        npImageArray2 = np.rot90(np.copy(npImageArray), 1)
+        npImageArray3 = np.rot90(np.copy(npImageArray), 2)
+        npImageArray4 = np.rot90(np.copy(npImageArray), 3)
+        npImageArrayFlip = np.flip(np.copy(npImageArray), axis = 1)
+        npImageArrayFlip2 = np.rot90(np.copy(npImageArrayFlip), 1)
+        npImageArrayFlip3 = np.rot90(np.copy(npImageArrayFlip), 2)
+        npImageArrayFlip4 = np.rot90(np.copy(npImageArrayFlip), 3)
+
     
     extraLine = np.empty([1, 224, 3])
 
@@ -142,10 +152,18 @@ for i in tiles.keys():
         npImageArray2 = np.append(npImageArray2, extraLine, axis=0)
         npImageArray3 = np.append(npImageArray3, extraLine, axis=0)
         npImageArray4 = np.append(npImageArray4, extraLine, axis=0)
+        npImageArrayFlip = np.append(npImageArrayFlip, extraLine, axis=0)
+        npImageArrayFlip2 = np.append(npImageArrayFlip2, extraLine, axis=0)
+        npImageArrayFlip3 = np.append(npImageArrayFlip3, extraLine, axis=0)
+        npImageArrayFlip4 = np.append(npImageArrayFlip4, extraLine, axis=0)
         nptiles[idx + 1] = npImageArray2
         nptiles[idx + 2] = npImageArray3
         nptiles[idx + 3] = npImageArray4
-        idx += 4
+        nptiles[idx + 4] = npImageArrayFlip
+        nptiles[idx + 5] = npImageArrayFlip2
+        nptiles[idx + 6] = npImageArrayFlip3
+        nptiles[idx + 7] = npImageArrayFlip4
+        idx += 8
     else:
         idx += 1
 
