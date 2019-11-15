@@ -30,6 +30,7 @@ def import_process(jpg):
 def pre_process2(image):
     #image is a [256, 256, 3] numpy array
     op = cv2.resize(image, dsize=(OUTPUT_IMAGE_WIDTH, OUTPUT_IMAGE_WIDTH), interpolation=cv2.INTER_CUBIC)
+    op = (op / 255)
     return op
 
 def import_process2(jpg):
@@ -130,7 +131,7 @@ nptiles = np.empty([numberTiles, 225, 224, 3])
 idx = 0
 for i in tiles.keys():
     current = tiles[i]
-    npImageArray = import_process(current.img)
+    npImageArray = import_process2(current.img)
     if (tileFlipping):
         npImageArray2 = np.rot90(np.copy(npImageArray), 1)
         npImageArray3 = np.rot90(np.copy(npImageArray), 2)
