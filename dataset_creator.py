@@ -6,7 +6,7 @@ import math
 import cv2
 from PIL import Image
 
-OUTPUT_IMAGE_WIDTH = 224
+OUTPUT_IMAGE_WIDTH = OUTPUT_IMAGE_WIDTH
 
 tileFlipping = True
 
@@ -125,7 +125,7 @@ print("number of ocean tiles: "+str(count))
 numberTiles = len(tiles)
 if (tileFlipping):
     numberTiles = len(tiles)*8
-nptiles = np.empty([numberTiles, 225, 224, 3])
+nptiles = np.empty([numberTiles, OUTPUT_IMAGE_WIDTH+1, OUTPUT_IMAGE_WIDTH, 3])
 
 idx = 0
 for i in tiles.keys():
@@ -141,7 +141,7 @@ for i in tiles.keys():
         npImageArrayFlip4 = np.rot90(np.copy(npImageArrayFlip), 3)
 
     
-    extraLine = np.empty([1, 224, 3])
+    extraLine = np.empty([1, OUTPUT_IMAGE_WIDTH, 3])
 
     extraLine[0][0][0] = current.zipCode.moneyPerPop
 
