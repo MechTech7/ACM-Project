@@ -7,6 +7,9 @@ import cv2
 from PIL import Image
 
 OUTPUT_IMAGE_WIDTH = 224
+
+tileFlipping = False
+
 def imageFile(x, y):
     return "imagery/14_"+str(x)+"_"+str(y)+".jpg"
 
@@ -70,7 +73,6 @@ print("zipcode: "+str(zipCodesCodes2[0])+", population: "+str(zipCodesPopulation
 
 
 #iterate over the zip codes
-print(zipCodesCodes.shape[0])
 
 count = 0
 
@@ -94,13 +96,8 @@ for i in range(zipCodesCodes.shape[0]):
             newTile = Tile(newZip,xCoord,yCoord)
             tiles[newTile.img] = newTile
             newZip.tiles.append(newTile)
-        else:
-            #print(str(newZip) + " X: "+str(x(newZip.lon,14))+" Y: "+str(y(newZip.lat,14)))
-            count += 1
 
-print(count)
-
-print(len(zipCodes.keys()))
+print("number of zipcodes: "+str(len(zipCodes.keys())))
 
 for xCoord in range(2794, 2839):
     for yCoord in range(6528, 6572):
@@ -119,46 +116,41 @@ for xCoord in range(2794, 2839):
             newTile = Tile(zipCodes[minI],xCoord,yCoord)
             zipCodes[minI].tiles.append(newTile)
             tiles[newTile.img] = newTile
-
-count = 0
-for i in zipCodes.keys():
-    print(zipCodes[i])
-    count += 1
-    for j in zipCodes[i].tiles:
-        print(j)
-    print("")
-    if (count >= 20):
-        break
-
-print(len(tiles))
-nptiles = np.empty([len(tiles), 225, 224, 3])
+            
+numberTiles = len(tiles)
+if (tileFlipping):
+    numberTiles = len(tiles)*4
+nptiles = np.empty([numberTiles, 225, 224, 3])
 
 idx = 0
 for i in tiles.keys():
     current = tiles[i]
     npImageArray = import_process(current.img)
+    if (tileFlipping):
+        npImageArray2 = np.flip(np.copy(npImageArray), axis = 0)
+        npImageArray3 = np.flip(np.copy(npImageArray), axis = 1)
+        npImageArray4 = np.flip(np.flip(np.copy(npImageArray), axis = 0), axis = 1)
+    
     extraLine = np.empty([1, 224, 3])
 
-    if (idx < 4):
-        npImageArray2 = import_process2(current.img)
-        img = Image.fromarray(npImageArray2, 'RGB')
-        newName = tiles[i].img[:tiles[i].img.find(".")] + "_2" + tiles[i].img[tiles[i].img.find("."):]
-        print(tiles[i].zipCode.moneyPerPop)
-        print(tiles[i].img)
-        print(newName+"\n")
-        img.save(newName)
-
-    if (not hasattr(current.zipCode,"moneyPerPop")):
-        print(current.zipCode)
     extraLine[0][0][0] = current.zipCode.moneyPerPop
+
     npImageArray = np.append(npImageArray, extraLine, axis=0)
     nptiles[idx] = npImageArray
-    idx += 1
 
-print(nptiles[0][224][0][0])
-print(nptiles[1][224][0][0])
-print(nptiles[2][224][0][0])
-print(nptiles[3][224][0][0])
-print(nptiles[4][224][0][0])
+    if (tileFlipping):
+        npImageArray2 = np.append(npImageArray2, extraLine, axis=0)
+        npImageArray3 = np.append(npImageArray3, extraLine, axis=0)
+        npImageArray4 = np.append(npImageArray4, extraLine, axis=0)
+        nptiles[idx + 1] = npImageArray2
+        nptiles[idx + 2] = npImageArray3
+        nptiles[idx + 3] = npImageArray4
+        idx += 4
+    else:
+        idx += 1
+
 np.save("compiledData.npy", nptiles)
 
+print("number of tiles: "+str(nptiles.shape[0]))
+
+print("Complete!")
