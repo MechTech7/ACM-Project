@@ -6,7 +6,7 @@ import math
 import cv2
 from PIL import Image
 
-OUTPUT_IMAGE_WIDTH = OUTPUT_IMAGE_WIDTH
+OUTPUT_IMAGE_WIDTH = 256
 
 tileFlipping = True
 
@@ -18,7 +18,7 @@ def dist(x1, y1, x2, y2):
 
 def pre_process(image):
     #image is a [256, 256, 3] numpy array
-    op = (op / 255)
+    op = (image / 255)
     return op
 
 def import_process(jpg):
@@ -125,7 +125,7 @@ print("number of ocean tiles: "+str(count))
 numberTiles = len(tiles)
 if (tileFlipping):
     numberTiles = len(tiles)*8
-nptiles = np.empty([numberTiles, OUTPUT_IMAGE_WIDTH+1, OUTPUT_IMAGE_WIDTH, 3])
+nptiles = np.empty([numberTiles, OUTPUT_IMAGE_WIDTH + 1, OUTPUT_IMAGE_WIDTH, 3])
 
 idx = 0
 for i in tiles.keys():
