@@ -18,7 +18,6 @@ def dist(x1, y1, x2, y2):
 
 def pre_process(image):
     #image is a [256, 256, 3] numpy array
-    op = cv2.resize(image, dsize=(OUTPUT_IMAGE_WIDTH, OUTPUT_IMAGE_WIDTH), interpolation=cv2.INTER_CUBIC)
     op = (op / 255)
     return op
 
@@ -131,7 +130,7 @@ nptiles = np.empty([numberTiles, 225, 224, 3])
 idx = 0
 for i in tiles.keys():
     current = tiles[i]
-    npImageArray = import_process2(current.img)
+    npImageArray = import_process(current.img)
     if (tileFlipping):
         npImageArray2 = np.rot90(np.copy(npImageArray), 1)
         npImageArray3 = np.rot90(np.copy(npImageArray), 2)
